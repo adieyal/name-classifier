@@ -5,7 +5,6 @@ import click
 from features import gen_features, gen_features2
 from model import load_classifier
 from datetime import datetime
-from pmap import pmap
 
 logger = logging.getLogger(__name__)
 
