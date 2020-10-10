@@ -54,7 +54,7 @@ def classify_name(model, name):
 def chunks(iter, size):
     accum = []
     for el in iter:
-        accum.append(el.strip().decode("utf8"))
+        accum.append(el.strip())
         if len(accum) == size:
             yield accum
             accum = []
@@ -63,7 +63,7 @@ def chunks(iter, size):
 
 @cli.command()
 @click.argument("model", type=click.File("rb"))
-@click.argument("filename", type=click.File("r"))
+@click.argument("filename", type=click.File("r", encoding="latin1"))
 def classify_file(model, filename, chunk_size=5000):
     logger.info("Loading classifier")
     now = datetime.now()
@@ -81,7 +81,7 @@ def classify_file(model, filename, chunk_size=5000):
         sys.stderr.flush()
         for n, l in zip(chunk, labels):
             s = "%s,%s" % (n, l)
-            print(s.encode("utf8"))
+            print(s)
 
 @cli.command()
 @click.argument("model", type=click.File("rb"))
