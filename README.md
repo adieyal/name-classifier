@@ -74,4 +74,4 @@ python train.py train TRAINING_DIR bayes.model
 ```
 
 
-TRAINING_DIR should contain a list of files, one per class. Each file should be called <classname>.train. Each file contains one name per line
+`TRAINING_DIR` should contain a list of files, one per class. Each file should be called `<classname>.train`. Each file contains one name per line
