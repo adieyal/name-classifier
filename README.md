@@ -6,6 +6,13 @@ Naive bayes classifier to infer a personal attribute from a name
 python classify.py interactive bayes.model
 ```
 
+## Bulk classification
+`FILENAME` contains one name per line
+
+```
+python classify.py classify-file bayes.model FILENAME
+```
+
 ## Run in a web browser
 ```
 .env/bin/python3 webclassifier.py bayes.model
