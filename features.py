@@ -54,19 +54,6 @@ def gen_features_with_language(datum):
     features[language] = 1
     return features
 
-def gen_features2(name):
-    features = gen_features(name).items()
-
-    random.shuffle(features)
-    sample1 = features[0:10]
-    random.shuffle(features)
-    sample2 = features[0:10]
-
-    f = {(f1 + f2) : 1 for f1 in sample1 for f2 in sample2}
-    items_1 = features
-    items_2 = f.items()
-    return Counter(items_1 + items_2[0:10])
-
 def gen_features(name, include_name_part=True, include_bigrams=True, include_trigrams=True, include_4grams=True, include_surname=True, include_fullname=True):
 
     def generate_ngrams(token):

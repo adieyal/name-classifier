@@ -2,7 +2,7 @@ from __future__ import division
 import logging
 import sys
 import click
-from features import gen_features, gen_features2
+from features import gen_features
 from model import load_classifier
 from datetime import datetime
 
@@ -18,7 +18,7 @@ def get_classifier(modelfile, cache=True, use_classify_many=False):
         if name in cache_dict:
             return cache_dict[name]
         else:
-            feature = gen_features2(name)
+            feature = gen_features(name)
             label_numeric = classifier.predict(feature)[0]
             label = classes[label_numeric]
             
@@ -29,7 +29,7 @@ def get_classifier(modelfile, cache=True, use_classify_many=False):
     classify.classifier = classifier
 
     def classify_many(names):
-        features = [gen_features2(name) for name in names]
+        features = [gen_features(name) for name in names]
         labels = classifier.predict(features)
         return [classes[l] for l in labels]
 
@@ -49,7 +49,7 @@ def cli():
 @click.argument("name")
 def classify_name(model, name):
     classify = get_classifier(model)
-    print classify(name)
+    print(classify(name))
 
 def chunks(iter, size):
     accum = []
@@ -81,17 +81,17 @@ def classify_file(model, filename, chunk_size=5000):
         sys.stderr.flush()
         for n, l in zip(chunk, labels):
             s = "%s,%s" % (n, l)
-            print s.encode("utf8")
+            print(s.encode("utf8"))
 
 @cli.command()
 @click.argument("model", type=click.File("rb"))
 def interactive(model):
     classify = get_classifier(model, use_classify_many=False)
     while True:
-        text = raw_input("Name (or q to quit): ")
+        text = input("Name (or q to quit): ")
         if text.lower().strip() == "q":
             break
-        print classify(text)
+        print(classify(text))
 
 if __name__ == "__main__":
     cli()

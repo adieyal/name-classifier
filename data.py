@@ -9,7 +9,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s'
 )
 
-def load_data(train_folder, feature_func=features.gen_features2):
+def load_data(train_folder, feature_func=features.gen_features):
     data = {}
     X = []
     y = []

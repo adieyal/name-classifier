@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 import click
 import glob
@@ -9,7 +9,7 @@ import plotting
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.dict_vectorizer import DictVectorizer
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import classification_report 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import cross_validate, learning_curve, train_test_split
@@ -29,7 +29,6 @@ logging.basicConfig(
 
 feature_generators = {
     "gen_features" : features.gen_features,
-    "gen_features2" : features.gen_features2,
     "gen_features_with_language" : features.gen_features_with_language,
 }
 
@@ -43,7 +42,7 @@ def get_feature(feature_generator):
 def get_classifier():
     pipeline = Pipeline([
         ('vectorizer', DictVectorizer(sparse=True)),
-        ('nb', MultinomialNB())
+        ('classifier', MultinomialNB()),
     ])
     return pipeline
 
@@ -54,8 +53,8 @@ def cli():
 
 @cli.command()
 @click.argument("training_dir")
-@click.argument("modelfile", type=click.File("w"))
-@click.option("--feature_generator", default="gen_features2", help="feature generator to use")
+@click.argument("modelfile", type=click.File("wb"))
+@click.option("--feature_generator", default="gen_features", help="feature generator to use")
 def train(training_dir, modelfile, feature_generator):
     encoder = LabelEncoder()
 
@@ -77,7 +76,7 @@ def train(training_dir, modelfile, feature_generator):
 @click.option('--confusion-matrix/--no-confusion-matrix', default=False, help="Create a confusion matrix")
 @click.option('--print-classification-report/--no-print-classification-report', default=False, help="Print out a classification report")
 @click.option("--njobs", default=1, help="Number of parallel processes to use")
-@click.option("--feature_generator", default="gen_features2", help="feature generator to use")
+@click.option("--feature_generator", default="gen_features", help="feature generator to use")
 def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix, print_classification_report, feature_generator):
 
     feature_func = get_feature(feature_generator)
@@ -107,15 +106,15 @@ def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix
         def print_score(scores, metric):
             metric_key = "train_%s" % metric
             vals = scores[metric_key]
-            print "%s: %s +- %s" % (metric_key, vals.mean(), vals.std())
+            print("%s: %s +- %s" % (metric_key, vals.mean(), vals.std()))
 
             metric_key = "test_%s" % metric
             vals = scores[metric_key]
-            print "%s: %s +- %s" % (metric_key, vals.mean(), vals.std())
-            print ""
+            print("%s: %s +- %s" % (metric_key, vals.mean(), vals.std()))
+            print("")
         for m in scoring:
             print_score(scores, m)
-        print "\a"
+        print("\a")
     
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed)
     logger.info("Fitting")
@@ -130,7 +129,7 @@ def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix
 
     if print_classification_report:
         logger.info("Classification report")
-        print classification_report(y_test, y_pred, target_names=class_labels)
+        print(classification_report(y_test, y_pred, target_names=class_labels))
 
 if __name__ == "__main__":
     cli()
