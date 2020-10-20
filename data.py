@@ -46,6 +46,12 @@ def sample_race(race, distribution, num_samples):
     d = distribution[race]
     return choice(list(d.keys()), num_samples, p=list(d.values()))
 
+import random
+def pick_director(directors):
+    rand_idx = random.randint(0, len(directors) - 1)
+    return directors[rand_idx]
+    
+
 def load_name_pairs(train_folder, feature_func=features.gen_features, distribution=default_pair_distribution):
     X, y = load_data(train_folder, feature_func)
     num_observations = len(X)
@@ -66,10 +72,10 @@ def load_name_pairs(train_folder, feature_func=features.gen_features, distributi
     for race in distribution:
         directors = directors_by_race[race]
         co_directors_races = sample_race(race, distribution, len(directors))
-        co_directors = choice(directors_by_race[race], len(directors))
+        co_directors = [pick_director(directors_by_race[co]) for co in co_directors_races]
         pairs = zip(directors, co_directors)
 
-        modified_pairs = tqdm(((d, modify(c)) for d, c in pairs), "Modified pairs")
+        modified_pairs = ((d, modify(c)) for d, c in pairs)
         merged_directors += tqdm([d + o for d, o in modified_pairs], f"Generating director pairs for {race} directors...")
 
     return merged_directors, y
