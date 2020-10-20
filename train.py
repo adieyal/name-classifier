@@ -94,7 +94,8 @@ def train(training_dir, modelfile, feature_generator):
 @click.option("--njobs", default=1, help="Number of parallel processes to use")
 @click.option("--feature_generator", default="gen_features", help="feature generator to use")
 @click.option("--data-loader", default="basic_loader", help="data loading mechansim")
-def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix, print_classification_report, feature_generator, data_loader):
+@click.option("--print-misclassifications/--no-print-misclassifications", default=False, help="Print misclassified directors")
+def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix, print_classification_report, feature_generator, data_loader, print_misclassifications):
 
     feature_func = get_feature(feature_generator)
     data_loader_func = get_data_loader(data_loader)
@@ -150,7 +151,8 @@ def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix
         logger.info("Classification report")
         print(classification_report(y_test, y_pred, target_names=class_labels))
 
-    output_errors(X_test, y_pred, y_test)
+    if print_misclassifications:
+        output_errors(X_test, y_pred, y_test)
 
 
 if __name__ == "__main__":
