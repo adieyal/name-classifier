@@ -26,7 +26,7 @@ def load_data(train_folder, feature_func=features.gen_features):
         with open(fn) as fp:
             dataset = [n.strip() for n in fp]
             logger.info("%s contains %d examples" % (fn, len(dataset)))
-        for n in dataset[0:1000]:
+        for n in dataset:
             try:
                 X.append(feature_func(n))
                 y.append(ethnicity)
