@@ -26,7 +26,7 @@ def load_data(train_folder, feature_func=features.gen_features):
         with open(fn) as fp:
             dataset = [n.strip() for n in fp]
             logger.info("%s contains %d examples" % (fn, len(dataset)))
-        for n in dataset:
+        for n in dataset[0:1000]:
             try:
                 X.append(feature_func(n))
                 y.append(ethnicity)
@@ -50,21 +50,21 @@ import random
 def pick_director(directors):
     rand_idx = random.randint(0, len(directors) - 1)
     return directors[rand_idx]
+
+def modify(director):
+    return Counter(dict(("other_" + key, val) for key, val in director.items()))
     
 
 def load_name_pairs(train_folder, feature_func=features.gen_features, distribution=default_pair_distribution):
     X, y = load_data(train_folder, feature_func)
-    num_observations = len(X)
     newX = []
+    newY = []
 
     directors = {}
 
-    def modify(director):
-        return Counter(dict(("other_" + key, val) for key, val in director.items()))
 
     directors_by_race = {}
     for race in distribution:
-        logger.info(f"Generate director pairs for {race} directors...")
         directors = [x for (x, y) in zip(X, y) if y == race]
         directors_by_race[race] = directors
 
@@ -76,24 +76,10 @@ def load_name_pairs(train_folder, feature_func=features.gen_features, distributi
         pairs = zip(directors, co_directors)
 
         modified_pairs = ((d, modify(c)) for d, c in pairs)
-        merged_directors += tqdm([d + o for d, o in modified_pairs], f"Generating director pairs for {race} directors...")
+        newX += tqdm((d + o for d, o in modified_pairs), f"Generating director pairs for {race} directors...")
+        newY += [race] * len(directors)
 
-    return merged_directors, y
-
-    logger.info("Generate director pairs...")
-    for idx, (director, race) in enumerate(zip(X, y)):
-        progress = round(idx / num_observations * 100, 2)
-        sys.stderr.write(f"\r{progress}%                            ")
-        other_race = sample_race(race, distribution)
-        other_directors = directors[other_race]
-        other_director = np.random.choice(other_directors)
-        other_director2 = Counter(dict(("other_" + key, val) for key, val in other_director.items()))
-
-        newX.append(director + other_director2)
-
-    sys.stderr.write("\r")
-    return newX, y
-        
+    return newX, newY
 
     
 
