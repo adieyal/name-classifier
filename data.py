@@ -26,7 +26,7 @@ def load_data(train_folder, feature_func=features.gen_features):
         with open(fn) as fp:
             dataset = [n.strip() for n in fp]
             logger.info("%s contains %d examples" % (fn, len(dataset)))
-        for n in dataset:
+        for n in tqdm(dataset, "Creating features"):
             try:
                 X.append(feature_func(n))
                 y.append(ethnicity)
@@ -75,8 +75,8 @@ def load_name_pairs(train_folder, feature_func=features.gen_features, distributi
         co_directors = [pick_director(directors_by_race[co]) for co in co_directors_races]
         pairs = zip(directors, co_directors)
 
-        modified_pairs = ((d, modify(c)) for d, c in pairs)
-        newX += tqdm((d + o for d, o in modified_pairs), f"Generating director pairs for {race} directors...")
+        modified_pairs = tqdm([(d, modify(c)) for d, c in pairs], f"generating director pairs for {race} directors")
+        newX += (d + o for d, o in modified_pairs)
         newY += [race] * len(directors)
 
     return newX, newY
