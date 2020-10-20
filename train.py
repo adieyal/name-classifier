@@ -32,12 +32,23 @@ feature_generators = {
     "gen_features_with_language" : features.gen_features_with_language,
 }
 
+data_loaders = {
+    "basic_loader" : data.load_data,
+    "name_pairs_loader" : data.load_name_pairs,
+}
+
 def get_feature(feature_generator):
     if feature_generator in feature_generators:
         feature_func = feature_generators[feature_generator]
     else:
         raise Exception("Unknown feature generator: %s, expected one of:\n%s" % (feature_generator, "\n".join(feature_generators)))
     return feature_func
+
+def get_data_loader(data_loader):
+    if data_loader in data_loaders:
+        return data_loaders[data_loader]
+    else:
+        raise Exception("Unknown data loader: %s, expected one of:\n%s" % (data_loader, "\n".join(data_loaders)))
 
 def get_classifier():
     pipeline = Pipeline([
@@ -50,6 +61,11 @@ def get_classifier():
 def cli():
     pass
 
+def output_errors(X, y_pred, y_test):
+    for x, y_p, y_t in zip(X, y_pred, y_test):
+        if y_p != y_t:
+            name = [k for k in x.keys() if k.startswith("name_")][0]
+            print(name, y_p, y_t)
 
 @cli.command()
 @click.argument("training_dir")
@@ -77,14 +93,16 @@ def train(training_dir, modelfile, feature_generator):
 @click.option('--print-classification-report/--no-print-classification-report', default=False, help="Print out a classification report")
 @click.option("--njobs", default=1, help="Number of parallel processes to use")
 @click.option("--feature_generator", default="gen_features", help="feature generator to use")
-def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix, print_classification_report, feature_generator):
+@click.option("--data-loader", default="basic_loader", help="data loading mechansim")
+def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix, print_classification_report, feature_generator, data_loader):
 
     feature_func = get_feature(feature_generator)
+    data_loader_func = get_data_loader(data_loader)
     encoder = LabelEncoder()
 
     classifier = get_classifier()
 
-    X, y = data.load_data(training_dir, feature_func=feature_func)
+    X, y = data_loader_func(training_dir, feature_func=feature_func)
 
     logger.info("Transforming")
     y_transformed = encoder.fit_transform(y)
@@ -118,6 +136,7 @@ def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix
     
     X_train, X_test, y_train, y_test = train_test_split(X, y_transformed)
     logger.info("Fitting")
+    
     classifier.fit(X_train, y_train)
 
     logger.info("Predicting")
@@ -130,6 +149,9 @@ def test(training_dir, njobs, training_curve, cross_validation, confusion_matrix
     if print_classification_report:
         logger.info("Classification report")
         print(classification_report(y_test, y_pred, target_names=class_labels))
+
+    output_errors(X_test, y_pred, y_test)
+
 
 if __name__ == "__main__":
     cli()
